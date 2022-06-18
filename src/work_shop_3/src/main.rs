@@ -1,15 +1,16 @@
+use std::borrow::Borrow;
 use std::collections::HashMap;
 
 fn main() {
     println!("Hello, world!");
     let mut schools = School::new();
     println!("schools: {:?}", schools.students);
-    schools.add(7, "Alice");
-    schools.add(10, "Bob");
-    schools.add(7, "Charlie");
+    schools.add("A", "Alice");
+    schools.add("B", "Bob");
+    schools.add("A", "Charlie");
     println!("schools: {:?}", schools.students);
-    let grade_7 = schools.grade(7);
-    println!("grades 7: {:?}", grade_7);
+    let grade_A = schools.grade("A");
+    println!("grades A: {:?}", grade_A);
     let grades = schools.grades();
     println!("grades: {:?}", grades);
 }
@@ -91,40 +92,44 @@ fn main() {
 
 
 
-pub struct School {
-    students: HashMap<String, u32>
+pub struct School<T> {
+    students: HashMap<String, T>
 }
 
-impl School {
-    pub fn new() -> School {
+impl<T:std::cmp::Ord> School<T> {
+    pub fn new() -> School<T> {
         return School{students: HashMap::new()};
     }
 
-    pub fn add(&mut self, grade: u32, student: &str) {
+    pub fn add(&mut self, grade: T, student: &str) {
         self.students.insert(student.parse().unwrap(), grade);
     }
 
-    pub fn grades(&self) -> Vec<u32> {
-        let mut grades = Vec::new();
+    pub fn grades(&self) -> Vec<&T> {
+        let mut grades:Vec<&T> = Vec::new();
         for i in self.students.values() {
-            if !grades.contains(i) {
-                grades.push(*i)
-            }
+            grades.push(i);
         }
-        grades.sort();
         return grades;
 
     }
 
-
-    pub fn grade(&self, grade: u32) -> Vec<String> {
+    pub fn grade(&self, grade: T) -> Vec<String> {
         let mut student_name = Vec::new();
         for i in self.students.keys() {
-            if grade == self.students[i] {
+            if compare(&self.students[i], &grade) {
                 student_name.push(i.clone())
             }
         }
 
         return student_name;
+    }
+}
+
+fn compare<T: Ord>(a: &T, b: &T) -> bool {
+    if a == b{
+        true
+    }else {
+        false
     }
 }
